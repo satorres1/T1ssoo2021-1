@@ -11,7 +11,7 @@ int id_fabrica;
 int t=0;
 int cambios=0;
 
-void handler(int sig)
+void handler_sigabrt(int sig)
 {
 
   printf("\nfinalizo el semaforo %i, realizando: %i cambios\n", name, cambios);
@@ -28,14 +28,14 @@ void handler(int sig)
 
 int main(int argc, char const *argv[])
 {
-  signal(SIGABRT, handler);
+  signal(SIGABRT, handler_sigabrt);
   printf("I'm the SEMAFORO process and my PID is: %i, id: %s, tiempo: %s, fabrica_id: %s\n", getpid(), argv[0], argv[1], argv[2]);
   id_fabrica = atoi(argv[2]);
   int tiempo = atoi(argv[1]);
   name = atoi(argv[0]);
   int estado = 1;
   
-  while(t < 100)
+  while(t < 500)
   {
     sleep(tiempo);
     t+= tiempo;

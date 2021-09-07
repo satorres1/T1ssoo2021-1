@@ -6,17 +6,32 @@
 #include "../file_manager/manager.h"
 
 
-int turnos_sem1 = 0;
-int turnos_sem2 = 0;
-int turnos_sem3 = 0;
-int turnos_bodega = 0;
+int turnos_sem1 = -1;
+int turnos_sem2 = -1;
+int turnos_sem3 = -1;
+int turnos_bodega = -1;
 
 int estado_s1;
 int estado_s2;
 int estado_s3;
+int id_repartidor;
+
+void handler_sigabrt(int sig)
+{
+
+  FILE *fp;
+  char nombre_archivo[27];
+  sprintf(nombre_archivo, "repartidor_%i.txt", id_repartidor);
+  fp = fopen( nombre_archivo, "w");
+  fprintf(fp, "%i,%i,%i,%i\n", turnos_sem1, turnos_sem2, turnos_sem3, turnos_bodega);
+  fclose(fp);
+  
+  exit(0);
+  printf("Termino FORZADAMENTE repartidor con ID: %i\n", getpid());
+}
 
 
-void chequear_semaforo(int sig, siginfo_t *siginfo, void *ucontext) {
+void actualizar_semaforo(int sig, siginfo_t *siginfo, void *ucontext) {
   int semaforo = siginfo -> si_value.sival_int;
   if (semaforo == 1)
   {
@@ -90,7 +105,8 @@ int main(int argc, char const *argv[])
   int llego = false;
   int turnos = 0;
   int posicion = 0;
-  connect_sigaction(SIGUSR1, chequear_semaforo);
+  connect_sigaction(SIGUSR1, actualizar_semaforo);
+  signal(SIGABRT, handler_sigabrt);
   while (llego == false)
   {
     sleep(1);
@@ -161,7 +177,7 @@ int main(int argc, char const *argv[])
   fp = fopen( nombre_archivo, "w");
   fprintf(fp, "%i,%i,%i,%i\n", turnos_sem1, turnos_sem2, turnos_sem3, turnos_bodega);
   fclose(fp);
-  
+  kill(getppid(), SIGUSR2);
   exit(0);
-  printf("Termino repartidor con ID: %i\n", getpid());
+  printf("Termino CORRECTAMENTE repartidor con ID: %i\n", getpid());
 }

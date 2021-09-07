@@ -13,6 +13,7 @@
 
 
 int pid_repartidores[500];
+int pid_semaforos[3];
 
 int rep_creados = 0;
 int crear = 0;
@@ -26,6 +27,7 @@ int semaforopid;
 
 int repartidores_necesarios;
 int tiempo_de_repartidores;
+int repartidores_completados = 0;
 
 
 
@@ -35,6 +37,57 @@ int tiempo_de_repartidores;
 void crear_repartidor(){
   crear = 1;
 };
+
+void handler_sigabrt_fabrica(int sig)
+{
+
+  printf("FINALIZANDO LA FABRICA \n");
+  printf("PROPAGANDO LA SEÑAL A LOS REPARTIDORES \n");
+  for (int i = 0; i < rep_creados; i++)
+  {
+    kill(pid_repartidores[i], SIGABRT); 
+  }
+
+  while (repartidores_completados < rep_creados) {
+    wait(NULL);
+    printf("ESPERANDO QUE TERMINE PROCESO REPARTIDOR.\n");
+    ++repartidores_completados;  // TODO(pts): Remove pid from the pids array.
+  }
+
+  exit(0);
+  printf("FABRICA FINALIZADA \n");
+}
+
+void handler_sigausr2_fabrica(int sig)
+{
+  repartidores_completados+=1;
+}
+
+void handler_sigabrt_principal(int sig)
+{
+
+  printf("FINALIZANDO PROCESO PRINCIPAL \n");
+
+  printf("ESPERANDO QUE TERMINE PROCESO FABRICA\n");
+  kill(fabricapid, SIGABRT);
+  int status;
+  waitpid(fabricapid, &status, 0);
+
+  for (int i = 0; i < 3; i++)
+  {
+    kill(pid_semaforos[i], SIGABRT); 
+  }
+
+  int n = 3;
+  while (n > 0) {
+    wait(NULL);
+    printf("ESPERANDO QUE TERMINE PROCESO SEMAFORO.\n");
+    --n;  // TODO(pts): Remove pid from the pids array.
+  }
+
+  exit(0);
+  printf("PROCESO PRINCIPAL FINALIZADO \n");
+}
 
 
 void avisar_repartidor(int sig, siginfo_t *siginfo, void *ucontext){
@@ -153,8 +206,10 @@ int main(int argc, char const *argv[])
 
 
       signal(SIGALRM, crear_repartidor);
+      signal(SIGABRT, handler_sigabrt_fabrica);
       alarm(tiempo_de_repartidores); 
       connect_sigaction(SIGUSR1, avisar_repartidor);
+      signal(SIGUSR2, handler_sigausr2_fabrica);
 
       while (1)
     {
@@ -173,8 +228,8 @@ int main(int argc, char const *argv[])
           char repartidores_creados_str[3];
           sprintf(repartidores_creados_str, "%i", rep_creados);
 
-          printf("repartidores creados hasta ahoraaaaa: %s", repartidores_creados_str);
-          printf("aaaaaaaaaaaaaaah");
+          //printf("repartidores creados hasta ahoraaaaa: %s", repartidores_creados_str);
+          //printf("aaaaaaaaaaaaaaah");
 
           char* estado_s1_str;
           char* estado_s2_str;
@@ -227,14 +282,26 @@ int main(int argc, char const *argv[])
           printf("REPARTIDORES CREADOS HASTA EL MOMENTO: %i \n", rep_creados);
           alarm(tiempo_de_repartidores);
         }
+        else{
+          break;
+        }
       }
     }
+
+    while (repartidores_completados < rep_creados) {
+      wait(NULL);
+      printf("ESPERANDO QUE TERMINE PROCESO REPARTIDOR.\n");
+      ++repartidores_completados;  // TODO(pts): Remove pid from the pids array.
+    }
+    printf("TERMINANDO PROCESO FABRICA\n");
+    exit(0);
+
   }  
 
   else
   
   {
-    
+    signal(SIGABRT, handler_sigabrt_principal);
     for (int i = 0; i < 3; i++)
     {
       semaforopid = fork();
@@ -247,11 +314,35 @@ int main(int argc, char const *argv[])
         sprintf(fabrica_id_str, "%i", fabricapid);
         execlp("./semaforo", id_semaforo_str, tiempos_semaforos[i], fabrica_id_str, NULL);
       }
+      pid_semaforos[i] = semaforopid;
     
     }
     
   // Espero hasta que fábrica termine para destruir semaforos
-  wait(NULL);
+  int status;
+  waitpid(fabricapid, &status, 0);
+  printf("FABRICA YA TERMINÓ \n");
+
+  printf("FINALIZANDO PROCESO PRINCIPAL \n");
+
+  for (int i = 0; i < 3; i++)
+  {
+    kill(pid_semaforos[i], SIGABRT); 
+  }
+
+  int n = 3;
+  while (n > 0) {
+    wait(NULL);
+    printf("ESPERANDO QUE TERMINE PROCESO SEMAFORO.\n");
+    --n;  // TODO(pts): Remove pid from the pids array.
+  }
+
+  printf("PROCESO PRINCIPAL FINALIZADO \n");
+  exit(0);
+  
+
+
+  
   }
 }
 
