@@ -4,14 +4,89 @@
 #include <stdio.h>      /* Input/Output */
 #include <sys/wait.h>   /* Wait for Process Termination */
 #include <stdlib.h>     /* General Utilities */
+#include <math.h>
 
 #include "../file_manager/manager.h"
 
-int id_unico = 1;
+// guardamos en varaibles los diferentes valores
+
+
+
+int pid_repartidores[500];
+
+int rep_creados = 0;
+int crear = 0;
+
+int verde_s1 = 1;
+int verde_s2 = 1;
+int verde_s3 = 1;
+
+int fabricapid;
+int semaforopid;
+
+int repartidores_necesarios;
+int tiempo_de_repartidores;
+
+
+
+
+
+
+void crear_repartidor(){
+  crear = 1;
+};
+
+
+void avisar_repartidor(int sig, siginfo_t *siginfo, void *ucontext){
+  int semaforo = siginfo -> si_value.sival_int;
+  // cambiamos el estado de los semaforos para los repartidores que van a ser creados
+
+  if (semaforo == 1)
+  {
+    if (verde_s1 == 1)
+    {
+      verde_s1 = 0;
+    }
+    else if (verde_s1 == 0)
+    {
+      verde_s1 = 1;
+    }
+  }
+
+  if (semaforo == 2)
+  {
+    if (verde_s2 == 1)
+    {
+      verde_s2 = 0;
+    }
+    else if (verde_s2 == 0)
+    {
+      verde_s2 = 1;
+    }
+  }
+
+  if (semaforo == 3)
+  {
+    if (verde_s3 == 1)
+    {
+      verde_s3 = 0;
+    }
+    else if (verde_s3 == 0)
+    {
+      verde_s3 = 1;
+    }
+  }
+
+  for (int i = 0; i < rep_creados; i++)
+  { 
+    send_signal_with_int(pid_repartidores[i], semaforo);
+  }
+};
+
 
 int main(int argc, char const *argv[])
 {
-  int status;
+
   printf("I'm the DCCUBER process and my PID is: %i\n", getpid());
 
   char *filename = "input.txt";
@@ -35,7 +110,6 @@ int main(int argc, char const *argv[])
   }
   printf("\n");
 
-  // guardamos en varaibles los diferentes valores
   char* distancia_semaforo_1 = data_in->lines[0][0];
   char* distancia_semaforo_2 = data_in->lines[0][1];
   char* distancia_semaforo_3 = data_in->lines[0][2];
@@ -46,8 +120,19 @@ int main(int argc, char const *argv[])
   char* tiempo_semaforo_1 = data_in->lines[1][2];
   char* tiempo_semaforo_2 = data_in->lines[1][3];
   char* tiempo_semaforo_3 = data_in->lines[1][4];
- 
-  int fabricapid;
+
+  char** tiempos_semaforos = malloc(3 * sizeof(char*));
+
+  tiempos_semaforos[0] = tiempo_semaforo_1;
+  tiempos_semaforos[1] = tiempo_semaforo_2;
+  tiempos_semaforos[2] = tiempo_semaforo_3;
+
+  repartidores_necesarios = atoi(envios_necesarios);
+  tiempo_de_repartidores = atoi(tiempo_creacion);
+
+
+  
+
 
   printf("Liberando memoria...\n");
   input_file_destroy(data_in);
@@ -65,75 +150,116 @@ int main(int argc, char const *argv[])
     {
     
       printf("Soy la fabrica.. envios necesarios %i \n", atoi(envios_necesarios));
-      
-      for (int i = 0; i < atoi(envios_necesarios); i++)
-      {
-        int repartidorpid = fork();
-        if (repartidorpid == 0) {
-          char *args[]={"./repartidor", NULL};
-          execvp(args[0],args);
-        }
-        else
-        {
-          // dormir de acuerdo al tiempo de creación
-          printf("a dormir\n");
-          printf("tiempo de creacion %i", tiempo_creacion);
-          sleep(1);
-        }
-      }
 
-    }
 
-    else
+      signal(SIGALRM, crear_repartidor);
+      alarm(tiempo_de_repartidores); 
+      connect_sigaction(SIGUSR1, avisar_repartidor);
 
-    // aqui aún es el proceso principal
+      while (1)
     {
-      int semaforo_1;
-      int semaforo_2;
-      int semaforo_3;
-      char idChar[80];
-      char fabricaChar[80];
-      
-      sprintf(fabricaChar, "%i", fabricapid);
-  
-      semaforo_1 = fork();
-      if (semaforo_1 == 0)
-        {
-          sprintf(idChar, "%i", id_unico);
-          char *args[]={"./semaforo", tiempo_semaforo_1, idChar, fabricaChar, NULL};
-          execvp(args[0],args);
-        }
-      else
+      if (crear == 1)
       {
-        id_unico += 1;
-        semaforo_2 = fork();
-        if (semaforo_2 == 0)
-        {
-          sprintf(idChar, "%i", id_unico);
-          char *args[]={"./semaforo", tiempo_semaforo_2, idChar, fabricaChar, NULL};
-          execvp(args[0],args);
-        }
+        crear = 0;
+        rep_creados ++ ;
 
-        else
+        
+        int repartidor_id = fork();
+
+        if (repartidor_id == 0)
         {
-          id_unico += 1;
-          semaforo_3 = fork();
-          if (semaforo_3 == 0)
+          
+
+          char repartidores_creados_str[3];
+          sprintf(repartidores_creados_str, "%i", rep_creados);
+
+          printf("repartidores creados hasta ahoraaaaa: %s", repartidores_creados_str);
+          printf("aaaaaaaaaaaaaaah");
+
+          char* estado_s1_str;
+          char* estado_s2_str;
+          char* estado_s3_str;
+
+          if (verde_s1)
           {
-            sprintf(idChar, "%i", id_unico);
-            char *args[]={"./semaforo", tiempo_semaforo_3, idChar, fabricaChar, NULL};
-            execvp(args[0],args);
+            estado_s1_str = "1";
           }
+          else
+          {
+            estado_s1_str = "0";
+          }
+
+          if (verde_s2)
+          {
+            estado_s2_str = "1";
+          }
+          else
+          {
+            estado_s2_str = "0";
+          }
+
+          if (verde_s3)
+          {
+            estado_s3_str = "1";
+          }
+          else
+          {
+            estado_s3_str = "0";
+          }
+
+          char *args[]={"./repartidor", distancia_semaforo_1, distancia_semaforo_2, distancia_semaforo_3, distancia_bodega, repartidores_creados_str, estado_s1_str, estado_s2_str, estado_s3_str, NULL};
+          execvp(args[0],args);
+
+
+          //execlp("./repartidor", distancia_semaforo_1, distancia_semaforo_2, distancia_semaforo_3, distancia_bodega, repartidores_creados_str, estado_s1_str, estado_s2_str, estado_s3_str, NULL);
+
+          
+
+        
+          
+
+          // execlp("./repartidor", distancia_s1, distancia_s2, distancia_s3, distancia_b, repartidores_creados_str, NULL);
+        }
+        pid_repartidores[rep_creados - 1] = repartidor_id;
+        printf("REPARTIDOR CREADO ID: %i\n", repartidor_id);
+        if (rep_creados < repartidores_necesarios)
+        {
+          printf("REPARTIDORES CREADOS HASTA EL MOMENTO: %i \n", rep_creados);
+          alarm(tiempo_de_repartidores);
         }
       }
     }
-  }
-  else /* fork returns -1 on failure */
-  {
-      perror("fork"); /* display error message */
-      exit(0); 
-  }
+  }  
 
-  wait(&status);
-  printf("PARENT: Child's exit code is: %d\n", WEXITSTATUS(status));
+  else
+  
+  {
+    
+    for (int i = 0; i < 3; i++)
+    {
+      semaforopid = fork();
+      if (semaforopid == 0) {
+        
+        int id_semaforo = i + 1;
+        char id_semaforo_str[2];
+        sprintf(id_semaforo_str, "%i", id_semaforo);
+        char fabrica_id_str[6];
+        sprintf(fabrica_id_str, "%i", fabricapid);
+        execlp("./semaforo", id_semaforo_str, tiempos_semaforos[i], fabrica_id_str, NULL);
+      }
+    
+    }
+    
+  // Espero hasta que fábrica termine para destruir semaforos
+  wait(NULL);
+  }
 }
+
+  // DESCOMENTAR CUANDO SE HAGA WAIT
+
+}
+// Esperar fábrica
+  // Destruir semaforos
+
+    
+      
