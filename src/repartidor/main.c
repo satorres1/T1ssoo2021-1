@@ -25,7 +25,7 @@ void handler_sigabrt(int sig)
   fp = fopen( nombre_archivo, "w");
   fprintf(fp, "%i,%i,%i,%i\n", turnos_sem1, turnos_sem2, turnos_sem3, turnos_bodega);
   fclose(fp);
-  
+  kill(getppid(), SIGUSR2);
   exit(0);
   printf("Termino FORZADAMENTE repartidor con ID: %i\n", getpid());
 }
@@ -84,23 +84,23 @@ int main(int argc, char const *argv[])
   //printf("DISTANCIA SEMAFORO 3: %i\n", distancia_semaforo_3);
   //int distancia_bodega = atoi(argv[4]);
   //printf("DISTANCIA A BODEGA: %i\n", distancia_bodega);
-  int id_repartidor = atoi(argv[5]);
+  int id_repartidor = atoi(argv[4]);
   printf("ID REPARTIDOR: %i\n", id_repartidor);
 
   //estado_s1 = atoi(argv[6]);
   estado_s1 = 1;
   printf("\nESTADO SEMAFORO 1 AL CREAR: %i\n", estado_s1);
-  printf("\nESTADO SEMAFORO 1 AL CREAR COMO STR: %s\n", argv[6]);
+  printf("\nESTADO SEMAFORO 1 AL CREAR COMO STR: %s\n", argv[5]);
 
   estado_s2 = 1;
   //estado_s1 = atoi(argv[7]);
   printf("\nESTADO SEMAFORO 2 AL CREAR: %i\n", estado_s2);
-   printf("\nESTADO SEMAFORO 2 AL CREAR COMO STR: %s\n", argv[7]);
+   printf("\nESTADO SEMAFORO 2 AL CREAR COMO STR: %s\n", argv[6]);
 
   estado_s3 = 1;
   //estado_s1 = atoi(argv[8]);
   printf("\nESTADO SEMAFORO 3 AL CREAR: %i\n", estado_s3);
-   printf("\nESTADO SEMAFORO 3 AL CREAR COMO STR: %s\n", argv[8]);
+   printf("\nESTADO SEMAFORO 3 AL CREAR COMO STR: %s\n", argv[7]);
 
   int llego = false;
   int turnos = 0;

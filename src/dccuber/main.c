@@ -30,10 +30,6 @@ int tiempo_de_repartidores;
 int repartidores_completados = 0;
 
 
-
-
-
-
 void crear_repartidor(){
   crear = 1;
 };
@@ -61,6 +57,8 @@ void handler_sigabrt_fabrica(int sig)
 void handler_sigausr2_fabrica(int sig)
 {
   repartidores_completados+=1;
+  printf("REPARTIDOS COMPLETO PEDIDO\n");
+  printf("repartidores completados: %i y repartidores creados: %i\n", repartidores_completados, rep_creados);
 }
 
 void handler_sigabrt_principal(int sig)
@@ -262,11 +260,10 @@ int main(int argc, char const *argv[])
             estado_s3_str = "0";
           }
 
-          char *args[]={"./repartidor", distancia_semaforo_1, distancia_semaforo_2, distancia_semaforo_3, distancia_bodega, repartidores_creados_str, estado_s1_str, estado_s2_str, estado_s3_str, NULL};
-          execvp(args[0],args);
+          //char *args[]={"./repartidor", distancia_semaforo_1, distancia_semaforo_2, distancia_semaforo_3, distancia_bodega, repartidores_creados_str, estado_s1_str, estado_s2_str, estado_s3_str, NULL};
+          //execvp(args[0],args);
 
-
-          //execlp("./repartidor", distancia_semaforo_1, distancia_semaforo_2, distancia_semaforo_3, distancia_bodega, repartidores_creados_str, estado_s1_str, estado_s2_str, estado_s3_str, NULL);
+          execlp("./repartidor", distancia_semaforo_1, distancia_semaforo_2, distancia_semaforo_3, distancia_bodega, repartidores_creados_str, estado_s1_str, estado_s2_str, estado_s3_str, NULL);
 
           
 
@@ -289,9 +286,11 @@ int main(int argc, char const *argv[])
     }
 
     while (repartidores_completados < rep_creados) {
-      wait(NULL);
+      wait(0);
+      // sacar sleep despues
+      sleep(1);
       printf("ESPERANDO QUE TERMINE PROCESO REPARTIDOR.\n");
-      ++repartidores_completados;  // TODO(pts): Remove pid from the pids array.
+
     }
     printf("TERMINANDO PROCESO FABRICA\n");
     exit(0);
@@ -318,7 +317,6 @@ int main(int argc, char const *argv[])
     
     }
     
-  // Espero hasta que fábrica termine para destruir semaforos
   int status;
   waitpid(fabricapid, &status, 0);
   printf("FABRICA YA TERMINÓ \n");
@@ -332,9 +330,9 @@ int main(int argc, char const *argv[])
 
   int n = 3;
   while (n > 0) {
-    wait(NULL);
+    wait(0);
     printf("ESPERANDO QUE TERMINE PROCESO SEMAFORO.\n");
-    --n;  // TODO(pts): Remove pid from the pids array.
+    --n;
   }
 
   printf("PROCESO PRINCIPAL FINALIZADO \n");
@@ -346,11 +344,8 @@ int main(int argc, char const *argv[])
   }
 }
 
-  // DESCOMENTAR CUANDO SE HAGA WAIT
-
 }
-// Esperar fábrica
-  // Destruir semaforos
+
 
     
       

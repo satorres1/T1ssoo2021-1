@@ -35,27 +35,23 @@ int main(int argc, char const *argv[])
   name = atoi(argv[0]);
   int estado = 1;
   
-  while(t < 500)
+  while(1)
   {
     sleep(tiempo);
     t+= tiempo;
     {
       if (estado == 1)
       {
-        printf("soy el semaforo %i y mi estado es %i\n", name, estado);
         estado = 0;
         cambios +=1;
         send_signal_with_int(id_fabrica, name);
       }
       else if (estado == 0)
       {
-        printf("soy el semaforo %i y mi estado es %i\n", name, estado);
         estado = 1;
         cambios +=1;
         send_signal_with_int(id_fabrica, name);
       }
     }
   }
-  // este kill debemos moverlo a la fabrica y terminar los semaforos cuando el programa termine
-  kill(getpid(), SIGABRT);
 }
