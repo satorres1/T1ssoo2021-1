@@ -11,6 +11,11 @@ int id_fabrica;
 int t=0;
 int cambios=0;
 
+void handler_sigint_semaforo(int sig)
+{
+  printf("PROCESO SEMAFORO INTENTANDO TERMINAR POR SIGINT, NO PASA NADA\n");
+}
+
 void handler_sigabrt(int sig)
 {
 
@@ -29,6 +34,7 @@ void handler_sigabrt(int sig)
 int main(int argc, char const *argv[])
 {
   signal(SIGABRT, handler_sigabrt);
+  signal(SIGINT, handler_sigint_semaforo);
   printf("I'm the SEMAFORO process and my PID is: %i, id: %s, tiempo: %s, fabrica_id: %s\n", getpid(), argv[0], argv[1], argv[2]);
   id_fabrica = atoi(argv[2]);
   int tiempo = atoi(argv[1]);

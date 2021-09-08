@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <stdbool.h>
+#include <time.h>
 #include "../file_manager/manager.h"
 
 
@@ -25,9 +26,19 @@ void handler_sigabrt(int sig)
   fp = fopen( nombre_archivo, "w");
   fprintf(fp, "%i,%i,%i,%i\n", turnos_sem1, turnos_sem2, turnos_sem3, turnos_bodega);
   fclose(fp);
+  srand(time(0));
+  int randomnumber;
+  randomnumber = rand() % 3;
+  sleep(randomnumber);
   kill(getppid(), SIGUSR2);
-  exit(0);
   printf("Termino FORZADAMENTE repartidor con ID: %i\n", getpid());
+  exit(0);
+  
+}
+
+void handler_sigint_repartidor(int sig)
+{
+  printf("PROCESO REPARTIDOR INTENTANDO TERMINAR POR SIGINT, NO PASA NADA\n");
 }
 
 
@@ -73,10 +84,10 @@ int main(int argc, char const *argv[])
 {
   printf("I'm the REPARTIDOR process and my PID is: %i\n", getpid());
   //int distancia_semaforo_1 = atoi(argv[1]);
-  int distancia_semaforo_1 = 1;
-  int distancia_semaforo_2 = 3;
-  int distancia_semaforo_3 = 5;
-  int distancia_bodega = 7;
+  int distancia_semaforo_1 = 2;
+  int distancia_semaforo_2 = 5;
+  int distancia_semaforo_3 = 77;
+  int distancia_bodega = 9;
   //printf("DISTANCIA SEMAFORO 1: %i\n", distancia_semaforo_1);
   //int distancia_semaforo_2 = atoi(argv[2]);
   //printf("DISTANCIA SEMAFORO 2: %i\n", distancia_semaforo_2);
@@ -107,6 +118,7 @@ int main(int argc, char const *argv[])
   int posicion = 0;
   connect_sigaction(SIGUSR1, actualizar_semaforo);
   signal(SIGABRT, handler_sigabrt);
+  signal(SIGINT, handler_sigint_repartidor);
   while (llego == false)
   {
     sleep(1);
@@ -177,7 +189,13 @@ int main(int argc, char const *argv[])
   fp = fopen( nombre_archivo, "w");
   fprintf(fp, "%i,%i,%i,%i\n", turnos_sem1, turnos_sem2, turnos_sem3, turnos_bodega);
   fclose(fp);
+  srand(time(0));
+  int randomnumber;
+  randomnumber = rand() % 3;
+  sleep(randomnumber);
   kill(getppid(), SIGUSR2);
-  exit(0);
   printf("Termino CORRECTAMENTE repartidor con ID: %i\n", getpid());
+  sleep(1);
+  exit(0);
+  
 }

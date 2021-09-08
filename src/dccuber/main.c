@@ -44,20 +44,39 @@ void handler_sigabrt_fabrica(int sig)
     kill(pid_repartidores[i], SIGABRT); 
   }
 
+
+  //BORRRRAAAAAAAR
+  exit(0);
+
+
+
   while (repartidores_completados < rep_creados) {
-    wait(NULL);
+    wait(0);
+    sleep(1);
     printf("ESPERANDO QUE TERMINE PROCESO REPARTIDOR.\n");
-    ++repartidores_completados;  // TODO(pts): Remove pid from the pids array.
   }
 
-  exit(0);
   printf("FABRICA FINALIZADA \n");
+  exit(0);
+  
+}
+
+void handler_sigint_principal(int sig)
+{
+  printf("PROCESO PRINCIPAL TERMINANDO A LA FUERZA\n");
+  kill(getpid(), SIGABRT);
+  
+}
+
+void handler_sigint_fabrica(int sig)
+{
+  printf("PROCESO FABRICA INTENTANDO TERMINAR POR SIGINT, NO PASA NADA\n");
 }
 
 void handler_sigausr2_fabrica(int sig)
 {
   repartidores_completados+=1;
-  printf("REPARTIDOS COMPLETO PEDIDO\n");
+  printf("PROCESO DE REPARTIDOR COMPLETADO O INTERRUMPIDO\n");
   printf("repartidores completados: %i y repartidores creados: %i\n", repartidores_completados, rep_creados);
 }
 
@@ -83,8 +102,9 @@ void handler_sigabrt_principal(int sig)
     --n;  // TODO(pts): Remove pid from the pids array.
   }
 
-  exit(0);
   printf("PROCESO PRINCIPAL FINALIZADO \n");
+  exit(0);
+ 
 }
 
 
@@ -208,13 +228,14 @@ int main(int argc, char const *argv[])
       alarm(tiempo_de_repartidores); 
       connect_sigaction(SIGUSR1, avisar_repartidor);
       signal(SIGUSR2, handler_sigausr2_fabrica);
+      signal(SIGINT, handler_sigint_fabrica);
 
       while (1)
     {
       if (crear == 1)
       {
         crear = 0;
-        rep_creados ++ ;
+        rep_creados +=1 ;
 
         
         int repartidor_id = fork();
@@ -301,6 +322,7 @@ int main(int argc, char const *argv[])
   
   {
     signal(SIGABRT, handler_sigabrt_principal);
+    signal(SIGINT, handler_sigint_principal);
     for (int i = 0; i < 3; i++)
     {
       semaforopid = fork();
@@ -335,6 +357,7 @@ int main(int argc, char const *argv[])
     --n;
   }
 
+  free(tiempos_semaforos);
   printf("PROCESO PRINCIPAL FINALIZADO \n");
   exit(0);
   
