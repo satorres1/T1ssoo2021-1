@@ -46,14 +46,12 @@ void handler_sigabrt_fabrica(int sig)
 
 
   //BORRRRAAAAAAAR
-  exit(0);
+  //exit(0);
 
 
 
   while (repartidores_completados < rep_creados) {
-    wait(0);
-    sleep(1);
-    printf("ESPERANDO QUE TERMINE PROCESO REPARTIDOR.\n");
+    
   }
 
   printf("FABRICA FINALIZADA \n");
@@ -243,7 +241,7 @@ int main(int argc, char const *argv[])
         if (repartidor_id == 0)
         {
           
-
+          signal(SIGUSR1, SIG_IGN);
           char repartidores_creados_str[3];
           sprintf(repartidores_creados_str, "%i", rep_creados);
 
@@ -306,12 +304,11 @@ int main(int argc, char const *argv[])
       }
     }
 
+    //pid_t wpid;
+    //int status;
+    //while ((wpid = wait(&status)) > 0);
     while (repartidores_completados < rep_creados) {
-      wait(0);
-      // sacar sleep despues
-      sleep(1);
-      printf("ESPERANDO QUE TERMINE PROCESO REPARTIDOR.\n");
-
+      // mantenerse aqui hasta que todos los hijos terminen
     }
     printf("TERMINANDO PROCESO FABRICA\n");
     exit(0);

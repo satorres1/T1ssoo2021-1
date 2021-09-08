@@ -84,34 +84,34 @@ int main(int argc, char const *argv[])
 {
   printf("I'm the REPARTIDOR process and my PID is: %i\n", getpid());
   //int distancia_semaforo_1 = atoi(argv[1]);
-  int distancia_semaforo_1 = 2;
-  int distancia_semaforo_2 = 5;
-  int distancia_semaforo_3 = 77;
-  int distancia_bodega = 9;
-  //printf("DISTANCIA SEMAFORO 1: %i\n", distancia_semaforo_1);
-  //int distancia_semaforo_2 = atoi(argv[2]);
-  //printf("DISTANCIA SEMAFORO 2: %i\n", distancia_semaforo_2);
-  //int distancia_semaforo_3 = atoi(argv[3]);
-  //printf("DISTANCIA SEMAFORO 3: %i\n", distancia_semaforo_3);
-  //int distancia_bodega = atoi(argv[4]);
-  //printf("DISTANCIA A BODEGA: %i\n", distancia_bodega);
+  int distancia_semaforo_1 = 1;
+  //int distancia_semaforo_2 = 5;
+  //int distancia_semaforo_3 = 77;
+  //int distancia_bodega = 9;
+  printf("DISTANCIA SEMAFORO 1: %i\n", distancia_semaforo_1);
+  int distancia_semaforo_2 = atoi(argv[1]);
+  printf("DISTANCIA SEMAFORO 2: %i\n", distancia_semaforo_2);
+  int distancia_semaforo_3 = atoi(argv[2]);
+  printf("DISTANCIA SEMAFORO 3: %i\n", distancia_semaforo_3);
+  int distancia_bodega = atoi(argv[3]);
+  printf("DISTANCIA A BODEGA: %i\n", distancia_bodega);
   int id_repartidor = atoi(argv[4]);
   printf("ID REPARTIDOR: %i\n", id_repartidor);
 
-  //estado_s1 = atoi(argv[6]);
   estado_s1 = 1;
-  printf("\nESTADO SEMAFORO 1 AL CREAR: %i\n", estado_s1);
+  //estado_s1 = atoi(argv[5]);
+  //printf("\nESTADO SEMAFORO 1 AL CREAR: %i\n", estado_s1);
   printf("\nESTADO SEMAFORO 1 AL CREAR COMO STR: %s\n", argv[5]);
 
   estado_s2 = 1;
-  //estado_s1 = atoi(argv[7]);
-  printf("\nESTADO SEMAFORO 2 AL CREAR: %i\n", estado_s2);
-   printf("\nESTADO SEMAFORO 2 AL CREAR COMO STR: %s\n", argv[6]);
+  //estado_s1 = atoi(argv[6]);
+  //printf("\nESTADO SEMAFORO 2 AL CREAR: %i\n", estado_s2);
+  printf("\nESTADO SEMAFORO 2 AL CREAR COMO STR: %s\n", argv[6]);
 
   estado_s3 = 1;
-  //estado_s1 = atoi(argv[8]);
-  printf("\nESTADO SEMAFORO 3 AL CREAR: %i\n", estado_s3);
-   printf("\nESTADO SEMAFORO 3 AL CREAR COMO STR: %s\n", argv[7]);
+  //estado_s1 = atoi(argv[7]);
+  //printf("\nESTADO SEMAFORO 3 AL CREAR: %i\n", estado_s3);
+  printf("\nESTADO SEMAFORO 3 AL CREAR COMO STR: %s\n", argv[7]);
 
   int llego = false;
   int turnos = 0;
